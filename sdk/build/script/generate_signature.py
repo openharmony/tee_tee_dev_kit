@@ -63,6 +63,37 @@ def get_add_opens_flag(cfg):
         add_opens_flag = "--add-opens=java.base/java.lang=ALL-UNNAMED"
     return add_opens_flag
 
+
+def gen_data_for_sign_ex(data_for_sign, data_for_sign_path):
+    """ generate data for sign """
+    fd_sign_path = os.open(data_for_sign_path, os.O_WRONLY | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR)
+    fp_sign_path = os.fdopen(fd_sign_path, "wb")
+    fp_sign_path.write(data_for_sign)
+    fp_sign_path.close()
+
+
+def sign_by_ci_tool_with_RSA_alg(data_for_sign_path, signature_path):
+    """ signed by CI tool with RSA algorithm """
+    env = os.environ
+    sign_script = env.get("IAS_SIGN_SCRIPT_PATH")
+    sign_alg_ini = env.get("IAS_SIGN_ALG_INI_PATH")
+
+    if not os.path.isfile(sign_script) or not os.path.isfile(sign_alg_ini):
+        raise RuntimeError("{" + sign_script + "}" + \
+                       "{" + sign_alg_ini + "}" + "not exist")
+
+    cmd = 'python3 %s sign \
+            --sign_ini %s \
+            --infile %s --outfile %s' \
+            % (sign_script, sign_alg_ini, data_for_sign_path, signature_path)
+    try:
+        logging.info("signing...")
+        subprocess.check_output(cmd.split(), shell=False)
+    except Exception as e:
+        logging.error("Error: sign failed!\n\t")
+        raise RuntimeError from e
+
+
 def signed_by_jar_tool(cfg, raw_data, hash_file_path, uuid_str, raw_data_path, out_file_path):
     """ signed by sign server using sign.jar tool """
     (user_id, password) = gen_identity()
@@ -139,6 +170,11 @@ def gen_ta_signature(cfg, uuid_str, raw_data, raw_data_path, hash_file_path, \
                 exit(0)
     elif cfg.sign_type == '2': # signed by sign server 
         signed_by_jar_tool(cfg, raw_data, hash_file_path, uuid_str, raw_data_path, out_file_path)
+    elif cfg.sign_type == '3': # signed by ias CI RSA
+        # 1. pre calc signature to get sign_len
+        gen_data_for_sign_ex(raw_data, raw_data_path)
+        # 2. sign by ias ci
+        sign_by_ci_tool_with_RSA_alg(raw_data_path, out_file_path)
     else:
         logging.error("unhandled signtype %s", cfg.sign_type)
 
