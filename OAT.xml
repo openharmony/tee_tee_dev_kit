@@ -51,6 +51,7 @@
             <policy name="projectPolicy" desc="">
                 <policyitem type="license" name="MulanPSL-2.0" path=".*" rule="may" group="defaultGroup" filefilter="defaultPolicyFilter" desc="Mulan PSL v2 license"/>
                 <policyitem type="copyright" name="Huawei Technologies Co." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Copyright information"/>
+                <policyitem type="copyright" name="Institute of Parallel And Distributed Systems (IPADS), Shanghai Jiao Tong University (SJTU)" path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Copyright information"/>
             </policy>
         </policylist>
         <filefilterlist>
