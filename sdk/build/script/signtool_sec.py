@@ -458,7 +458,7 @@ def update_api_level(cfg, manifest):
                 data += line
 
     api_level = parser_api_level(mk_compile_cfg, cmake_compile_cfg, mk_config_cfg, cmake_config_cfg)
-    line = "\ngpd.ta.api_level:{}\n".format(api_level)
+    line = "gpd.ta.api_level:{}\n".format(api_level)
     data += line
     fd_op = os.open(manifest, os.O_WRONLY | os.O_CREAT, \
         stat.S_IWUSR | stat.S_IRUSR)
