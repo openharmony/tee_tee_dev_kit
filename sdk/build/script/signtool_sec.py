@@ -146,6 +146,7 @@ class AllCfg:
     ini_path = ""
     memctrl_path = ""
     disable_memctrl = "0"
+    force_memctrl = False
 
 class PublicCfg:
     def __init__(self, file_name, all_cfg):
@@ -743,8 +744,10 @@ def gen_sec_image(temp_path, cfg):
     uuid_str = manifest_info.uuid_str
     uuid_str = uuid_str[0:36]
     logging.info("uuid str %s", uuid_str)
-    if cfg.disable_memctrl != "1" and not check_memory_baseline(cfg, uuid_str, manifest_val):
-        logging.error("memory baseline checking failed, but sign will continue temporarily.")
+    need_check_memctrl = cfg.disable_memctrl != "1" and (cfg.release_type != "0" or cfg.force_memctrl)
+    if need_check_memctrl and not check_memory_baseline(cfg, uuid_str, manifest_val):
+        logging.error("sign failed due to not passing memory baseline checking.")
+        return False
     gen_signature(cfg, uuid_str, data_for_sign, key_info_data, temp_path)
 
     pack_sec_img(cfg, manifest_info, temp_path)
@@ -785,6 +788,8 @@ def define_parser():
         help="sign cfg for product developer", type=str)
     parser.add_argument("--memctrl_path", \
         help="path to memory baseline control cfgs", type=str, default="")
+    parser.add_argument("--force-memctrl", \
+        help="force enable memctrl checking", action="store_true")
     return parser
 
 
@@ -815,6 +820,8 @@ def init_cfg(args):
     cfg.ini_path = os.path.realpath(ini_path)
     cfg.public_key = os.path.join(cfg.ini_path, cfg.public_key)
     cfg.memctrl_path = args.memctrl_path if cfg.release_type != "0" else ""
+    if args.force_memctrl:
+        cfg.force_memctrl = args.force_memctrl
     return cfg
 
 

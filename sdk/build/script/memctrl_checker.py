@@ -29,7 +29,10 @@ def whitelist_check(intput_str):
 
 def convert_num(field):
     """convert string to int, and return None if input is invalid."""
-    return int(field)
+    try:
+        return int(field)
+    except ValueError:
+        return None
 
 
 def convert_boolean(field):
@@ -38,7 +41,7 @@ def convert_boolean(field):
         return True
     if field == "n" or field.lower() == "false":
         return False
-    raise ValueError
+    return None
 
 
 def convert_mem_limit(field):
@@ -55,10 +58,41 @@ def check_manifest(manifest):
         manifest.instancekeepalive in [0, 1] and manifest.multi_session in [0, 1]
 
 
+def parse_memctrl_dict(cfg_file):
+    """parse memctrl XML and check integrity."""
+    mandatory_fields = {
+        'heap_limit': convert_mem_limit,
+        'stack_limit': convert_mem_limit,
+        'multi_session': convert_boolean,
+        'keepalive': convert_boolean,
+    }
+    memctrl_dict = {}
+    try:
+        root = ET.parse(cfg_file).getroot()
+        for node in root:
+            tag, value = node.tag, node.text
+            if tag in memctrl_dict:
+                logging.error("Memctrl file contains duplicated tag \"%s\"." % (tag,))
+                return None
+            if tag in mandatory_fields:
+                memctrl_dict[tag] = mandatory_fields[tag](value)
+    except ET.ParseError:
+        logging.error("Failed to parse memctrl XML file.")
+        return None
+    if any(v is None for v in memctrl_dict.values()):
+        for tag in memctrl_dict:
+            if memctrl_dict[tag] is None:
+                logging.error("Memctrl file contains invalid data in field \"%s\"." % (tag,))
+        return None
+    if len(memctrl_dict) < len(mandatory_fields):
+        missing_keys = mandatory_fields.keys() - memctrl_dict.keys()
+        logging.error("Memctrl file missing fields: %s" % (', '.join(missing_keys)))
+        return None
+    return memctrl_dict
+
+
 def check_memory_baseline(cfg, uuid_str, manifest_val):
     """check memory baseline in manifest with memctrl config files."""
-    if cfg.release_type == "0":
-        return True
     if not check_manifest(manifest_val):
         logging.error("Invalid manifest for memory control checking.")
         return False
@@ -77,36 +111,8 @@ def check_memory_baseline(cfg, uuid_str, manifest_val):
         logging.error("Memctrl file %s does not exist." % (cfg_file,))
         return False
 
-    mandatory_fields = {
-        'heap_limit': convert_mem_limit,
-        'stack_limit': convert_mem_limit,
-        'multi_session': convert_boolean,
-        'keepalive': convert_boolean,
-    }
-    memctrl_dict = {}
-    try:
-        root = ET.parse(cfg_file).getroot()
-        for node in root:
-            tag, value = node.tag, node.text
-            if tag in memctrl_dict:
-                logging.error("Memctrl file contains duplicated tag  \"%s\"." % (tag,))
-                return False
-            if tag in mandatory_fields:
-                try:
-                    memctrl_dict[tag] = mandatory_fields[tag](value)
-                except ValueError:
-                    memctrl_dict[tag] = None
-    except ET.ParseError:
-        logging.error("Failed to parse memctrl XML file.")
-        return False
-    if any(v is None for v in memctrl_dict.values()):
-        for tag in memctrl_dict:
-            if memctrl_dict[tag] is None:
-                logging.error("Memctrl file contains invalid data in field \"%s\"." % (tag,))
-        return False
-    if len(memctrl_dict) < len(mandatory_fields):
-        missing_keys = mandatory_fields.keys() - memctrl_dict.keys()
-        logging.error("Memctrl file missing fields: %s" % (', '.join(missing_keys)))
+    memctrl_dict = parse_memctrl_dict(cfg_file)
+    if memctrl_dict is None:
         return False
 
     # Check manifest against memctrl config
