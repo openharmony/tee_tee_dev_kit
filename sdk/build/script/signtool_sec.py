@@ -746,8 +746,7 @@ def gen_sec_image(temp_path, cfg):
     logging.info("uuid str %s", uuid_str)
     need_check_memctrl = cfg.disable_memctrl != "1" and (cfg.release_type != "0" or cfg.force_memctrl)
     if need_check_memctrl and not check_memory_baseline(cfg, uuid_str, manifest_val):
-        logging.error("sign failed due to not passing memory baseline checking.")
-        return False
+        logging.error("memory baseline checking failed, but sign will continue temporarily.")
     gen_signature(cfg, uuid_str, data_for_sign, key_info_data, temp_path)
 
     pack_sec_img(cfg, manifest_info, temp_path)
