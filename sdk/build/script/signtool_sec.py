@@ -79,7 +79,8 @@ def check_cfg_whitelist_format(intput_str):
 
 
 def whitelist_check(intput_str):
-    if not re.match(r"^[A-Za-z0-9\/\-_.${}]+$", intput_str):
+    if not re.match(r"^[A-Za-z0-9\/\\_.$:{}-]+$", intput_str):
+        logging.error(f"Path Invalid: '{intput_str}', Allowed Characters: Letters(A-Z a-z), Special Symbols(/ - _ . {{ }} \ $ :)")
         return 1
     return 0
 
@@ -436,7 +437,7 @@ def parser_api_level(mk_compile_cfg, cmake_compile_cfg, mk_config_cfg, cmake_con
         logging.error("Build config file doesn't exist, ignore it")
         return default_api_level
 
-    with open(compile_cfg_file) as file_op:
+    with open(compile_cfg_file, encoding="utf-8") as file_op:
         for line in file_op:
             if line.startswith("#") or "-DAPI_LEVEL" not in line:
                 continue
