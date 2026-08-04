@@ -31,6 +31,14 @@ copy("tee_ndk_cmake") {
   outputs = [ "$ndk_os_irrelevant_out_dir/build/teekit/cmake/{{source_file_part}}" ]
 }
 
+copy("tee_ndk_cmake_ide") {
+  sources = [
+    "./cmake_ide/common.cmake",
+    "./cmake_ide/common_flags.cmake",
+  ]
+  outputs = [ "$ndk_os_irrelevant_out_dir/build/teekit/cmake_ide/{{source_file_part}}" ]
+}
+
 copy("tee_ndk_config") {
   sources = [
     "config/config_ta_public.ini",
@@ -95,6 +103,7 @@ group("tee_ndk_ta_linux_compile") {
     deps = [
         ":tee_ndk_make",
         ":tee_ndk_cmake",
+        ":tee_ndk_cmake_ide",
         ":tee_ndk_config",
         ":tee_ndk_script",
         ":tee_ndk_ld",
