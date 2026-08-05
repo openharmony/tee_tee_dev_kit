@@ -12,7 +12,7 @@
 
 #include <tee_ext_api.h>
 #include <tee_log.h>
-#include <securec.h>
+#include "securec.h"
 
 #define TA_TEMPLATE_VERSION "demo_20200601"
 #define PARAM_COUNT      4
