@@ -57,6 +57,7 @@ def gen_jar_path():
         jar_path = input("Please input NativeCASign.jar path:")
     return jar_path
 
+
 def get_add_opens_flag(cfg):
     add_opens_flag = ""
     if cfg.jdk_version == "11":
