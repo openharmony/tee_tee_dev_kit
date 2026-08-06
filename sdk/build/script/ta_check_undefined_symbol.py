@@ -56,7 +56,7 @@ def save_elf_symbol(elf_path):
 
     sym_info = SymbolInfo(0, 0, 0, 0, 0)
     cmd = ["objdump", "-T", elf_path]
- 	process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE)
+    process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE)
     output, error = process.communicate()
     output = (output.decode('utf-8')).split('\n')[4:]
 
