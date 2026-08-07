@@ -300,6 +300,7 @@ class Configuration:
             return 1
         return 0
 
+
 def pack_signature(signature_path, signature_size):
     add_size = 72 - signature_size
     with open(signature_path, 'rb+') as signature_file:

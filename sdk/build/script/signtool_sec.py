@@ -148,6 +148,7 @@ class AllCfg:
     memctrl_path = ""
     disable_memctrl = "0"
 
+
 class PublicCfg:
     def __init__(self, file_name, all_cfg):
 
@@ -180,6 +181,7 @@ class PublicCfg:
         if parser.has_option(cfg_section, "disableMemctrlCheck"):
             all_cfg.disable_memctrl = parser.get(cfg_section, "disableMemctrlCheck")
 
+
 class PrivateCfg:
     def __init__(self, file_name, all_cfg):
         cfg_section = 'signSecPrivateCfg'
@@ -211,6 +213,7 @@ class PrivateCfg:
             all_cfg.jdk_version = parser.get(cfg_section, "jdkVersion")
         else:
             all_cfg.jdk_version = "8"
+
 
 def check_key_info(cfg):
     ''' check ini key info '''
